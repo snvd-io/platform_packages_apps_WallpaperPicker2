@@ -20,8 +20,8 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import com.android.wallpaper.model.WallpaperInfo
 import com.android.wallpaper.module.WallpaperPreviewFragmentManager
-import com.android.wallpaper.picker.ImagePreviewFragment
-import com.android.wallpaper.picker.PreviewFragment
+import com.android.wallpaper.picker.ImagePreviewFragment2
+import com.android.wallpaper.picker.PreviewFragment2
 
 class TestWallpaperPreviewFragmentManager : WallpaperPreviewFragmentManager {
     override fun getPreviewFragment(
@@ -30,15 +30,18 @@ class TestWallpaperPreviewFragmentManager : WallpaperPreviewFragmentManager {
         mode: Int,
         viewAsHome: Boolean,
         viewFullScreen: Boolean,
-        testingModeEnabled: Boolean
+        testingModeEnabled: Boolean,
+        isAssetIdPresent: Boolean
     ): Fragment {
         val args = Bundle()
-        args.putParcelable(PreviewFragment.ARG_WALLPAPER, wallpaperInfo)
-        args.putInt(PreviewFragment.ARG_PREVIEW_MODE, mode)
-        args.putBoolean(PreviewFragment.ARG_VIEW_AS_HOME, viewAsHome)
-        args.putBoolean(PreviewFragment.ARG_FULL_SCREEN, viewFullScreen)
-        args.putBoolean(PreviewFragment.ARG_TESTING_MODE_ENABLED, testingModeEnabled)
-        val fragment = ImagePreviewFragment()
+        args.putParcelable(PreviewFragment2.ARG_WALLPAPER, wallpaperInfo)
+        args.putInt(PreviewFragment2.ARG_PREVIEW_MODE, mode)
+        args.putBoolean(PreviewFragment2.ARG_VIEW_AS_HOME, viewAsHome)
+        args.putBoolean(PreviewFragment2.ARG_FULL_SCREEN, viewFullScreen)
+        args.putBoolean(PreviewFragment2.ARG_TESTING_MODE_ENABLED, testingModeEnabled)
+        args.putBoolean(PreviewFragment2.ARG_IS_ASSET_ID_PRESENT, isAssetIdPresent)
+
+        val fragment = ImagePreviewFragment2()
         fragment.arguments = args
         return fragment
     }

@@ -17,9 +17,6 @@ package com.android.wallpaper.picker;
 
 import static android.view.View.VISIBLE;
 
-import static com.android.wallpaper.picker.PreviewFragment.ARG_VIEW_AS_HOME;
-import static com.android.wallpaper.picker.PreviewFragment.ARG_WALLPAPER;
-
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
@@ -38,6 +35,8 @@ import android.view.LayoutInflater;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Interpolator;
+import android.view.animation.PathInterpolator;
 import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
@@ -45,6 +44,7 @@ import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.CallSuper;
+import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.core.content.res.ResourcesCompat;
@@ -80,6 +80,36 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
  */
 public abstract class PreviewFragment2 extends Fragment implements WallpaperColorThemePreview {
 
+    public static final Interpolator ALPHA_OUT = new PathInterpolator(0f, 0f, 0.8f, 1f);
+
+    /**
+     * User can view wallpaper and attributions in full screen, but "Set wallpaper" button is
+     * hidden.
+     */
+    public static final int MODE_VIEW_ONLY = 0;
+
+    /**
+     * User can view wallpaper and attributions in full screen and click "Set wallpaper" to set the
+     * wallpaper with pan and crop position to the device.
+     */
+    public static final int MODE_CROP_AND_SET_WALLPAPER = 1;
+
+    /**
+     * Possible preview modes for the fragment.
+     */
+    @IntDef({
+            MODE_VIEW_ONLY,
+            MODE_CROP_AND_SET_WALLPAPER})
+    public @interface PreviewMode {
+    }
+
+    public static final String ARG_IS_ASSET_ID_PRESENT = "is_asset_id_present";
+    public static final String ARG_WALLPAPER = "wallpaper";
+    public static final String ARG_PREVIEW_MODE = "preview_mode";
+    public static final String ARG_VIEW_AS_HOME = "view_as_home";
+    public static final String ARG_FULL_SCREEN = "view_full_screen";
+    public static final String ARG_TESTING_MODE_ENABLED = "testing_mode_enabled";
+
     private static final String TAG = "PreviewFragment2";
 
     protected WallpaperInfo mWallpaper;
@@ -107,6 +137,18 @@ public abstract class PreviewFragment2 extends Fragment implements WallpaperColo
     protected TouchForwardingLayout mTouchForwardingLayout;
 
     protected ProgressBar mProgressBar;
+
+    private boolean mIsViewAsHome;
+
+    /**
+     * We create an instance of WallpaperInfo from CurrentWallpaperInfo when a user taps on
+     * the preview of a wallpapers in the wallpaper picker main screen. However, there are
+     * other instances as well in which an instance of the specific WallpaperInfo is created. This
+     * variable is used in order to identify whether the instance created has an assetId or not.
+     * This is needed for restricting the destination where a wallpaper can be set after editing
+     * it.
+     */
+    private boolean mIsAssetIdPresent;
 
     // The system "short" animation time duration, in milliseconds. This
     // duration is ideal for subtle animations or animations that occur
@@ -165,9 +207,9 @@ public abstract class PreviewFragment2 extends Fragment implements WallpaperColo
         super.onCreate(savedInstanceState);
         Bundle args = requireArguments();
         mWallpaper = args.getParcelable(ARG_WALLPAPER);
-        boolean viewAsHome = args.getBoolean(ARG_VIEW_AS_HOME);
-        mInitSelectedTab = viewAsHome ? DuoTabs.TAB_SECONDARY
-                : DuoTabs.TAB_PRIMARY;
+        mIsViewAsHome = args.getBoolean(ARG_VIEW_AS_HOME);
+        mIsAssetIdPresent = args.getBoolean(ARG_IS_ASSET_ID_PRESENT);
+        mInitSelectedTab = mIsViewAsHome ? DuoTabs.TAB_SECONDARY : DuoTabs.TAB_PRIMARY;
         Context appContext = requireContext().getApplicationContext();
         Injector injector = InjectorProvider.getInjector();
 
@@ -472,7 +514,7 @@ public abstract class PreviewFragment2 extends Fragment implements WallpaperColo
                 == View.LAYOUT_DIRECTION_RTL;
     }
 
-    private void onSetWallpaperSuccess() {
+    protected void onSetWallpaperSuccess() {
         Activity activity = getActivity();
         if (activity == null) {
             return;
@@ -497,12 +539,31 @@ public abstract class PreviewFragment2 extends Fragment implements WallpaperColo
     }
 
     private void showDestinationSelectionDialogForWallpaper(WallpaperInfo wallpaperInfo) {
+
+        // This logic is implemented for the editing of live wallpapers. The purpose is to
+        // restrict users to set the edited creative wallpaper only to the destination from
+        // where they originally started the editing process. For instance, if they began editing
+        // by clicking on the homescreen preview, they would be allowed to set the wallpaper on the
+        // homescreen and both the homescreen and lockscreen. On the other hand, if they initiated
+        // editing by clicking on the lockscreen preview, they would only be allowed to set the
+        // wallpaper on the lockscreen and both the homescreen and lockscreen. It's essential to
+        // note that this restriction only applies when the editing process is started by tapping
+        // on the preview available on the wallpaper picker home page.
+        boolean isLockOption = true;
+        boolean isHomeOption = true;
+        if (wallpaperInfo instanceof LiveWallpaperInfo) {
+            if (!mIsAssetIdPresent) {
+                isHomeOption = mIsViewAsHome;
+                isLockOption = !mIsViewAsHome;
+            }
+        }
+
         mWallpaperSetter.requestDestination(getActivity(), getParentFragmentManager(),
                 destination -> {
                     mSetWallpaperViewModel.setDestination(destination);
                     setWallpaper(destination);
                 },
-                wallpaperInfo instanceof LiveWallpaperInfo);
+                wallpaperInfo instanceof LiveWallpaperInfo, isHomeOption, isLockOption);
     }
 
     protected void showSetWallpaperErrorDialog() {
