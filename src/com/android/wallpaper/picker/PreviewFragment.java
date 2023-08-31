@@ -17,6 +17,10 @@ package com.android.wallpaper.picker;
 
 import static android.view.View.VISIBLE;
 
+import static com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_LAUNCHER;
+import static com.android.wallpaper.util.LaunchSourceUtils.LAUNCH_SOURCE_SETTINGS_HOMEPAGE;
+import static com.android.wallpaper.util.LaunchSourceUtils.WALLPAPER_LAUNCH_SOURCE;
+
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED;
 import static com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_HIDDEN;
 
@@ -27,6 +31,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.WallpaperColors;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources.NotFoundException;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -78,7 +83,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 /**
  * Base Fragment to display the UI for previewing an individual wallpaper.
  */
-public abstract class PreviewFragment2 extends Fragment implements WallpaperColorThemePreview {
+public abstract class PreviewFragment extends Fragment implements WallpaperColorThemePreview {
 
     public static final Interpolator ALPHA_OUT = new PathInterpolator(0f, 0f, 0.8f, 1f);
 
@@ -103,14 +108,12 @@ public abstract class PreviewFragment2 extends Fragment implements WallpaperColo
     public @interface PreviewMode {
     }
 
+    public static final String ARG_IS_NEW_TASK = "is_new_task";
     public static final String ARG_IS_ASSET_ID_PRESENT = "is_asset_id_present";
     public static final String ARG_WALLPAPER = "wallpaper";
-    public static final String ARG_PREVIEW_MODE = "preview_mode";
     public static final String ARG_VIEW_AS_HOME = "view_as_home";
-    public static final String ARG_FULL_SCREEN = "view_full_screen";
-    public static final String ARG_TESTING_MODE_ENABLED = "testing_mode_enabled";
 
-    private static final String TAG = "PreviewFragment2";
+    private static final String TAG = "PreviewFragment";
 
     protected WallpaperInfo mWallpaper;
     protected WallpaperSetter mWallpaperSetter;
@@ -149,6 +152,11 @@ public abstract class PreviewFragment2 extends Fragment implements WallpaperColo
      * it.
      */
     private boolean mIsAssetIdPresent;
+
+    /**
+     * True if the activity of this fragment is launched with {@link Intent#FLAG_ACTIVITY_NEW_TASK}.
+     */
+    private boolean mIsNewTask;
 
     // The system "short" animation time duration, in milliseconds. This
     // duration is ideal for subtle animations or animations that occur
@@ -209,6 +217,7 @@ public abstract class PreviewFragment2 extends Fragment implements WallpaperColo
         mWallpaper = args.getParcelable(ARG_WALLPAPER);
         mIsViewAsHome = args.getBoolean(ARG_VIEW_AS_HOME);
         mIsAssetIdPresent = args.getBoolean(ARG_IS_ASSET_ID_PRESENT);
+        mIsNewTask = args.getBoolean(ARG_IS_NEW_TASK);
         mInitSelectedTab = mIsViewAsHome ? DuoTabs.TAB_SECONDARY : DuoTabs.TAB_PRIMARY;
         Context appContext = requireContext().getApplicationContext();
         Injector injector = InjectorProvider.getInjector();
@@ -527,6 +536,15 @@ public abstract class PreviewFragment2 extends Fragment implements WallpaperColo
         }
         activity.setResult(Activity.RESULT_OK);
         finishActivityWithFadeTransition();
+
+        // Start activity to go back to main screen.
+        if (mIsNewTask) {
+            Intent intent = new Intent(requireActivity(), TrampolinePickerActivity.class);
+            intent.putExtra(WALLPAPER_LAUNCH_SOURCE,
+                    mIsViewAsHome ? LAUNCH_SOURCE_LAUNCHER : LAUNCH_SOURCE_SETTINGS_HOMEPAGE);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        }
     }
 
     protected void finishActivityWithFadeTransition() {
