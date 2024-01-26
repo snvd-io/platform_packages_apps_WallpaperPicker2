@@ -17,6 +17,7 @@
 
 package com.android.wallpaper.picker.customization.data.repository
 
+import android.app.WallpaperColors
 import android.graphics.Bitmap
 import android.graphics.Rect
 import android.util.LruCache
@@ -126,6 +127,7 @@ class WallpaperRepository(
         bitmap: Bitmap,
         cropHints: Map<ScreenOrientation, Rect>,
     ) {
+        // TODO(b/303317694): provide set wallpaper status as flow
         withContext(backgroundDispatcher) {
             client.setStaticWallpaper(
                 setWallpaperEntryPoint,
@@ -171,6 +173,12 @@ class WallpaperRepository(
             }
         }
     }
+
+    suspend fun getWallpaperColors(
+        bitmap: Bitmap,
+        cropHints: Map<ScreenOrientation, Rect>?
+    ): WallpaperColors? =
+        withContext(backgroundDispatcher) { client.getWallpaperColors(bitmap, cropHints) }
 
     companion object {
         const val DEFAULT_KEY = "default_missing_key"
