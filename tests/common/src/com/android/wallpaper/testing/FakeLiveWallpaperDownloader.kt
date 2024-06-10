@@ -28,7 +28,10 @@ import kotlinx.coroutines.CompletableDeferred
 
 @Singleton
 class FakeLiveWallpaperDownloader @Inject constructor() : LiveWallpaperDownloader {
+
     private val downloadResult = CompletableDeferred<LiveWallpaperDownloadResultModel?>()
+
+    var isDownloadWallpaperCanceled = false
 
     fun setWallpaperDownloadResult(result: LiveWallpaperDownloadResultModel?) =
         downloadResult.complete(result)
@@ -45,5 +48,8 @@ class FakeLiveWallpaperDownloader @Inject constructor() : LiveWallpaperDownloade
         return downloadResult.await()
     }
 
-    override fun cancelDownloadWallpaper(): Boolean = false
+    override fun cancelDownloadWallpaper(): Boolean {
+        isDownloadWallpaperCanceled = true
+        return false
+    }
 }
