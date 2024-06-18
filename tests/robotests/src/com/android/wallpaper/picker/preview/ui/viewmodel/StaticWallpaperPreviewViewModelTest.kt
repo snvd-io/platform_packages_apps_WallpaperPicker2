@@ -112,12 +112,7 @@ class StaticWallpaperPreviewViewModelTest {
                 wallpaperPreferences,
                 testDispatcher,
             )
-        wallpaperPreviewRepository =
-            WallpaperPreviewRepository(
-                liveWallpaperDownloader,
-                wallpaperPreferences,
-                testDispatcher,
-            )
+        wallpaperPreviewRepository = WallpaperPreviewRepository(wallpaperPreferences)
         interactor =
             WallpaperPreviewInteractor(
                 wallpaperPreviewRepository,
