@@ -20,8 +20,8 @@ import android.content.Context
 import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.picker.preview.data.repository.CreativeEffectsRepository
 import com.android.wallpaper.picker.preview.data.repository.WallpaperPreviewRepository
-import com.android.wallpaper.picker.preview.data.util.FakeLiveWallpaperDownloader
 import com.android.wallpaper.testing.FakeImageEffectsRepository
+import com.android.wallpaper.testing.FakeLiveWallpaperDownloader
 import com.android.wallpaper.testing.ShadowWallpaperInfo
 import com.android.wallpaper.testing.TestInjector
 import com.android.wallpaper.testing.TestWallpaperPreferences

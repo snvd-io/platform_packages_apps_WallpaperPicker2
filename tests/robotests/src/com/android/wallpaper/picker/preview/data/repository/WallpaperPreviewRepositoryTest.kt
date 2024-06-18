@@ -24,9 +24,9 @@ import android.content.pm.ServiceInfo
 import androidx.test.core.app.ApplicationProvider
 import com.android.wallpaper.module.WallpaperPreferences
 import com.android.wallpaper.picker.data.WallpaperModel
-import com.android.wallpaper.picker.preview.data.util.FakeLiveWallpaperDownloader
 import com.android.wallpaper.picker.preview.shared.model.LiveWallpaperDownloadResultCode
 import com.android.wallpaper.picker.preview.shared.model.LiveWallpaperDownloadResultModel
+import com.android.wallpaper.testing.FakeLiveWallpaperDownloader
 import com.android.wallpaper.testing.ShadowWallpaperInfo
 import com.android.wallpaper.testing.TestWallpaperPreferences
 import com.android.wallpaper.testing.WallpaperModelUtils
