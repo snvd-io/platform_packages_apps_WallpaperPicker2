@@ -62,7 +62,7 @@ class CustomizationPickerActivity2 : Hilt_CustomizationPickerActivity2() {
     private var fullyCollapsed = false
 
     private val customizationPickerViewModel: CustomizationPickerViewModel2 by viewModels()
-    private var viewMap: Map<CustomizationOption, View>? = null
+    private var customizationOptionFloatingSheetMap: Map<CustomizationOption, View>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,9 +91,11 @@ class CustomizationPickerActivity2 : Hilt_CustomizationPickerActivity2() {
 
         val rootView = requireViewById<MotionLayout>(R.id.picker_motion_layout)
 
-        viewMap =
-            customizationOptionUtil.initBottomSheetContent(
-                rootView.requireViewById<FrameLayout>(R.id.customization_picker_bottom_sheet),
+        customizationOptionFloatingSheetMap =
+            customizationOptionUtil.initFloatingSheet(
+                rootView.requireViewById<FrameLayout>(
+                    R.id.customization_option_floating_sheet_container
+                ),
                 layoutInflater,
             )
         rootView.setTransitionListener(
@@ -153,7 +155,7 @@ class CustomizationPickerActivity2 : Hilt_CustomizationPickerActivity2() {
                 },
                 navigateToSecondary = { screen ->
                     if (rootView.currentState != R.id.secondary) {
-                        setCustomizePickerBottomSheetContent(rootView, screen) {
+                        setCustomizationOptionFloatingSheet(rootView, screen) {
                             fullyCollapsed = rootView.progress == 1.0f
                             rootView.transitionToState(R.id.secondary)
                         }
@@ -236,47 +238,54 @@ class CustomizationPickerActivity2 : Hilt_CustomizationPickerActivity2() {
         }
     }
 
-    private fun setCustomizePickerBottomSheetContent(
+    /**
+     * Set customization option floating sheet to the floating sheet container and get the new
+     * container's height for repositioning the preview's guideline.
+     */
+    private fun setCustomizationOptionFloatingSheet(
         motionContainer: MotionLayout,
         option: CustomizationOption,
         onComplete: () -> Unit
     ) {
-        val view = viewMap?.get(option) ?: return
+        val view = customizationOptionFloatingSheetMap?.get(option) ?: return
 
-        val customizationBottomSheet =
-            requireViewById<FrameLayout>(R.id.customization_picker_bottom_sheet)
+        val floatingSheetContainer =
+            requireViewById<FrameLayout>(R.id.customization_option_floating_sheet_container)
         val guideline = requireViewById<Guideline>(R.id.preview_guideline_in_secondary_screen)
-        customizationBottomSheet.removeAllViews()
-        customizationBottomSheet.addView(view)
+        floatingSheetContainer.removeAllViews()
+        floatingSheetContainer.addView(view)
 
         view.doOnPreDraw {
             val height = view.height
             guideline.setGuidelineEnd(height)
-            customizationBottomSheet.translationY = 0.0f
-            customizationBottomSheet.alpha = 0.0f
+            floatingSheetContainer.translationY = 0.0f
+            floatingSheetContainer.alpha = 0.0f
             // Update the motion container
             motionContainer.getConstraintSet(R.id.expanded_header_primary)?.apply {
-                setTranslationY(R.id.customization_picker_bottom_sheet, 0.0f)
-                setAlpha(R.id.customization_picker_bottom_sheet, 0.0f)
+                setTranslationY(R.id.customization_option_floating_sheet_container, 0.0f)
+                setAlpha(R.id.customization_option_floating_sheet_container, 0.0f)
                 constrainHeight(
-                    R.id.customization_picker_bottom_sheet,
+                    R.id.customization_option_floating_sheet_container,
                     ConstraintLayout.LayoutParams.WRAP_CONTENT
                 )
             }
             motionContainer.getConstraintSet(R.id.collapsed_header_primary)?.apply {
-                setTranslationY(R.id.customization_picker_bottom_sheet, 0.0f)
-                setAlpha(R.id.customization_picker_bottom_sheet, 0.0f)
+                setTranslationY(R.id.customization_option_floating_sheet_container, 0.0f)
+                setAlpha(R.id.customization_option_floating_sheet_container, 0.0f)
                 constrainHeight(
-                    R.id.customization_picker_bottom_sheet,
+                    R.id.customization_option_floating_sheet_container,
                     ConstraintLayout.LayoutParams.WRAP_CONTENT
                 )
             }
             motionContainer.getConstraintSet(R.id.secondary)?.apply {
                 setGuidelineEnd(R.id.preview_guideline_in_secondary_screen, height)
-                setTranslationY(R.id.customization_picker_bottom_sheet, -height.toFloat())
-                setAlpha(R.id.customization_picker_bottom_sheet, 1.0f)
+                setTranslationY(
+                    R.id.customization_option_floating_sheet_container,
+                    -height.toFloat()
+                )
+                setAlpha(R.id.customization_option_floating_sheet_container, 1.0f)
                 constrainHeight(
-                    R.id.customization_picker_bottom_sheet,
+                    R.id.customization_option_floating_sheet_container,
                     ConstraintLayout.LayoutParams.WRAP_CONTENT
                 )
             }
