@@ -35,11 +35,15 @@ import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
+import com.android.app.tracing.coroutines.launch
 import com.android.wallpaper.R
 import com.android.wallpaper.model.Screen
 import com.android.wallpaper.model.Screen.HOME_SCREEN
 import com.android.wallpaper.model.Screen.LOCK_SCREEN
+import com.android.wallpaper.model.wallpaper.DeviceDisplayType
+import com.android.wallpaper.module.InjectorProvider
 import com.android.wallpaper.module.MultiPanesChecker
+import com.android.wallpaper.picker.common.preview.ui.binder.BasePreviewBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationOptionsBinder
 import com.android.wallpaper.picker.customization.ui.binder.CustomizationPickerBinder2
 import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUtil
@@ -47,10 +51,16 @@ import com.android.wallpaper.picker.customization.ui.util.CustomizationOptionUti
 import com.android.wallpaper.picker.customization.ui.view.adapter.PreviewPagerAdapter
 import com.android.wallpaper.picker.customization.ui.view.transformer.PreviewPagerPageTransformer
 import com.android.wallpaper.picker.customization.ui.viewmodel.CustomizationPickerViewModel2
+import com.android.wallpaper.picker.di.modules.BackgroundDispatcher
+import com.android.wallpaper.picker.preview.data.repository.WallpaperPreviewRepository
 import com.android.wallpaper.util.ActivityUtils
+import com.android.wallpaper.util.WallpaperConnection
+import com.android.wallpaper.util.converter.WallpaperModelFactory
 import com.google.android.material.appbar.AppBarLayout
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint(AppCompatActivity::class)
 class CustomizationPickerActivity2 : Hilt_CustomizationPickerActivity2() {
@@ -58,6 +68,9 @@ class CustomizationPickerActivity2 : Hilt_CustomizationPickerActivity2() {
     @Inject lateinit var multiPanesChecker: MultiPanesChecker
     @Inject lateinit var customizationOptionUtil: CustomizationOptionUtil
     @Inject lateinit var customizationOptionsBinder: CustomizationOptionsBinder
+    @Inject lateinit var wallpaperModelFactory: WallpaperModelFactory
+    @Inject lateinit var wallpaperPreviewRepository: WallpaperPreviewRepository
+    @Inject @BackgroundDispatcher lateinit var backgroundScope: CoroutineScope
 
     private var fullyCollapsed = false
 
@@ -110,6 +123,28 @@ class CustomizationPickerActivity2 : Hilt_CustomizationPickerActivity2() {
                 }
             }
         )
+
+        val previewViewModel = customizationPickerViewModel.basePreviewViewModel
+        previewViewModel.setWhichPreview(WallpaperConnection.WhichPreview.EDIT_CURRENT)
+        previewViewModel.setIsWallpaperColorPreviewEnabled(
+            !InjectorProvider.getInjector().isCurrentSelectedColorPreset(applicationContext)
+        )
+
+        // WIP, the current preview flow only allows setting one wallpaper model to preview.
+        // To test the preview flow we get and set the current home wallpaper model.
+        // TODO (b/348462236): add ability preview current wallpaper models, lock and home
+        val wallpaperInfoFactory =
+            InjectorProvider.getInjector().getCurrentWallpaperInfoFactory(applicationContext)
+        backgroundScope.launch {
+            wallpaperInfoFactory.createCurrentWallpaperInfos(
+                applicationContext,
+                /* forceRefresh= */ true,
+            ) { homeWallpaper, _, _ ->
+                val homeWallpaperModel =
+                    wallpaperModelFactory.getWallpaperModel(applicationContext, homeWallpaper)
+                wallpaperPreviewRepository.setWallpaperModel(homeWallpaperModel)
+            }
+        }
 
         initPreviewPager()
 
@@ -210,11 +245,25 @@ class CustomizationPickerActivity2 : Hilt_CustomizationPickerActivity2() {
 
     private fun initPreviewPager() {
         val pager = requireViewById<ViewPager2>(R.id.preview_pager)
+        val previewViewModel = customizationPickerViewModel.basePreviewViewModel
         pager.apply {
             adapter = PreviewPagerAdapter { viewHolder, position ->
-                viewHolder.itemView
-                    .requireViewById<View>(R.id.preview_card)
-                    .setBackgroundColor(if (position == 0) Color.BLUE else Color.CYAN)
+                val previewCard = viewHolder.itemView.requireViewById<View>(R.id.preview_card)
+
+                BasePreviewBinder.bind(
+                    applicationContext,
+                    previewCard,
+                    previewViewModel,
+                    if (position == 0) {
+                        LOCK_SCREEN
+                    } else {
+                        HOME_SCREEN
+                    },
+                    DeviceDisplayType.SINGLE,
+                    previewViewModel.wallpaperDisplaySize.value,
+                    this@CustomizationPickerActivity2,
+                    true
+                )
             }
             // Disable over scroll
             (getChildAt(0) as RecyclerView).overScrollMode = RecyclerView.OVER_SCROLL_NEVER
@@ -222,6 +271,7 @@ class CustomizationPickerActivity2 : Hilt_CustomizationPickerActivity2() {
             offscreenPageLimit = 1
             // When pager's height changes, request transform to recalculate the preview offset
             // to make sure correct space between the previews.
+            // TODO (b/348462236): figure out how to scale surface view content with layout change
             addOnLayoutChangeListener { view, _, _, _, _, _, topWas, _, bottomWas ->
                 val isHeightChanged = (bottomWas - topWas) != view.height
                 if (isHeightChanged) {
