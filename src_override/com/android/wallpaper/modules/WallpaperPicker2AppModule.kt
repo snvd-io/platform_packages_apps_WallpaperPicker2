@@ -45,7 +45,7 @@ abstract class WallpaperPicker2AppModule {
 
     @Binds
     @Singleton
-    abstract fun bindWallpaperCategoryClient(
+    abstract fun bindDefaultWallpaperCategoryClient(
         impl: DefaultWallpaperCategoryClientImpl
     ): DefaultWallpaperCategoryClient
 
@@ -61,7 +61,7 @@ abstract class WallpaperPicker2AppModule {
 
     @Binds
     @Singleton
-    abstract fun bindEffectsWallpaperDialogUtil(
+    abstract fun bindImageEffectDialogUtil(
         impl: DefaultImageEffectDialogUtil
     ): ImageEffectDialogUtil
 

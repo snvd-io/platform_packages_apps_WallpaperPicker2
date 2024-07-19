@@ -53,31 +53,29 @@ abstract class WallpaperPicker2TestModule {
 
     @Binds @Singleton abstract fun bindUserEventLogger(impl: TestUserEventLogger): UserEventLogger
 
-    @Binds @Singleton abstract fun bindFakeRequester(impl: FakeDefaultRequester): Requester
+    @Binds @Singleton abstract fun bindRequester(impl: FakeDefaultRequester): Requester
 
     @Binds
     @Singleton
-    abstract fun bindFakeDefaultWallpaperCategoryClient(
-        impl: FakeDefaultWallpaperCategoryClient
+    abstract fun bindDefaultWallpaperCategoryClient(
+        impl: FakeDefaultWallpaperCategoryClient,
     ): DefaultWallpaperCategoryClient
 
     @Binds
     @Singleton
     abstract fun bindWallpaperModelFactory(
-        impl: FakeDefaultWallpaperModelFactory
+        impl: FakeDefaultWallpaperModelFactory,
     ): WallpaperModelFactory
 
     @Binds
     @Singleton
     abstract fun bindWallpaperPreferences(impl: TestWallpaperPreferences): WallpaperPreferences
 
-    @Binds
-    @Singleton
-    abstract fun providePartnerProvider(impl: TestPartnerProvider): PartnerProvider
+    @Binds @Singleton abstract fun bindPartnerProvider(impl: TestPartnerProvider): PartnerProvider
 
     @Binds
     @Singleton
-    abstract fun bindEffectsWallpaperDialogUtil(
+    abstract fun bindImageEffectDialogUtil(
         impl: DefaultImageEffectDialogUtil
     ): ImageEffectDialogUtil
 

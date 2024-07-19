@@ -51,7 +51,9 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class SharedAppModule {
-    @Binds @Singleton abstract fun bindUiModeManager(impl: UiModeManagerImpl): UiModeManagerWrapper
+    @Binds
+    @Singleton
+    abstract fun bindUiModeManagerWrapper(impl: UiModeManagerImpl): UiModeManagerWrapper
 
     @Binds
     @Singleton
@@ -59,11 +61,9 @@ abstract class SharedAppModule {
         impl: DefaultNetworkStatusNotifier
     ): NetworkStatusNotifier
 
-    @Binds @Singleton abstract fun bindWallpaperRequester(impl: WallpaperRequester): Requester
+    @Binds @Singleton abstract fun bindRequester(impl: WallpaperRequester): Requester
 
-    @Binds
-    @Singleton
-    abstract fun bindWallpaperXMLParser(impl: WallpaperParserImpl): WallpaperParser
+    @Binds @Singleton abstract fun bindWallpaperParser(impl: WallpaperParserImpl): WallpaperParser
 
     @Binds
     @Singleton
@@ -78,7 +78,7 @@ abstract class SharedAppModule {
     @Binds
     @Singleton
     abstract fun bindCreativeCategoryInteractor(
-        impl: CreativeCategoryInteractorImpl
+        impl: CreativeCategoryInteractorImpl,
     ): CreativeCategoryInteractor
 
     @Binds
