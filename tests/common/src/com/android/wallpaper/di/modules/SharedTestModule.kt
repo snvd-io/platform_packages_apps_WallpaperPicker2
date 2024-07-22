@@ -60,15 +60,15 @@ import kotlinx.coroutines.test.TestScope
     replaces = [SharedAppModule::class, DispatchersModule::class]
 )
 internal abstract class SharedTestModule {
-    @Binds @Singleton abstract fun bindUiModeManager(impl: FakeUiModeManager): UiModeManagerWrapper
+    @Binds
+    @Singleton
+    abstract fun bindUiModeManagerWrapper(impl: FakeUiModeManager): UiModeManagerWrapper
 
     @Binds
     @Singleton
     abstract fun bindNetworkStatusNotifier(impl: TestNetworkStatusNotifier): NetworkStatusNotifier
 
-    @Binds
-    @Singleton
-    abstract fun bindWallpaperXMLParser(impl: FakeWallpaperParser): WallpaperParser
+    @Binds @Singleton abstract fun bindWallpaperParser(impl: FakeWallpaperParser): WallpaperParser
 
     @Binds
     @Singleton

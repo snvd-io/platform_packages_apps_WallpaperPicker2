@@ -32,9 +32,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 class ConcurrencyModule {
 
-    private val BROADCAST_SLOW_DISPATCH_THRESHOLD = 1000L
-    private val BROADCAST_SLOW_DELIVERY_THRESHOLD = 1000L
-
     @Qualifier
     @MustBeDocumented
     @Retention(AnnotationRetention.RUNTIME)
@@ -65,5 +62,10 @@ class ConcurrencyModule {
     fun provideBroadcastRunningExecutor(@BroadcastRunning looper: Looper?): Executor {
         val handler = Handler(looper ?: Looper.getMainLooper())
         return Executor { command -> handler.post(command) }
+    }
+
+    companion object {
+        private const val BROADCAST_SLOW_DISPATCH_THRESHOLD = 1000L
+        private const val BROADCAST_SLOW_DELIVERY_THRESHOLD = 1000L
     }
 }
