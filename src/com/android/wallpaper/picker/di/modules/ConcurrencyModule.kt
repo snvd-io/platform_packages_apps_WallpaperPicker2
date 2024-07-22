@@ -37,6 +37,15 @@ class ConcurrencyModule {
     @Retention(AnnotationRetention.RUNTIME)
     annotation class BroadcastRunning
 
+    /** Provide a BroadcastRunning Executor (for sending and receiving broadcasts). */
+    @Provides
+    @Singleton
+    @BroadcastRunning
+    fun provideBroadcastRunningExecutor(@BroadcastRunning looper: Looper?): Executor {
+        val handler = Handler(looper ?: Looper.getMainLooper())
+        return Executor { command -> handler.post(command) }
+    }
+
     @Provides
     @Singleton
     @BroadcastRunning
@@ -53,15 +62,6 @@ class ConcurrencyModule {
                 )
             }
             .looper
-    }
-
-    /** Provide a BroadcastRunning Executor (for sending and receiving broadcasts). */
-    @Provides
-    @Singleton
-    @BroadcastRunning
-    fun provideBroadcastRunningExecutor(@BroadcastRunning looper: Looper?): Executor {
-        val handler = Handler(looper ?: Looper.getMainLooper())
-        return Executor { command -> handler.post(command) }
     }
 
     companion object {
