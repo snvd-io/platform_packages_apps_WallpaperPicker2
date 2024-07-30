@@ -93,7 +93,7 @@ constructor(
                 categories.map { category ->
                     TileViewModel(
                         defaultDrawable = null,
-                        thumbnailAsset = null,
+                        thumbnailAsset = category.collectionCategoryData?.thumbAsset,
                         text = category.commonCategoryData.title,
                     )
                 }
