@@ -46,7 +46,6 @@ object BasePreviewBinder {
         isFirstBinding: Boolean,
     ) {
         val wallpaperSurface: SurfaceView = view.requireViewById(R.id.wallpaper_surface)
-        val workspaceSurface: SurfaceView = view.requireViewById(R.id.workspace_surface)
 
         WallpaperPreviewBinder.bind(
             applicationContext = applicationContext,
@@ -57,24 +56,6 @@ object BasePreviewBinder {
             deviceDisplayType = deviceDisplayType,
             viewLifecycleOwner = lifecycleOwner,
             isFirstBinding = isFirstBinding,
-        )
-
-        val previewUtils =
-            when (screen) {
-                Screen.HOME_SCREEN -> {
-                    viewModel.homePreviewUtils
-                }
-                Screen.LOCK_SCREEN -> {
-                    viewModel.lockPreviewUtils
-                }
-            }
-
-        WorkspacePreviewBinder.bind(
-            surfaceView = workspaceSurface,
-            viewModel = viewModel,
-            previewUtils = previewUtils,
-            deviceDisplayType = deviceDisplayType,
-            lifecycleOwner = lifecycleOwner,
         )
     }
 }
