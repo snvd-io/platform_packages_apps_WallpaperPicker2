@@ -23,6 +23,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 @Singleton
 class FakeDefaultWallpaperCategoryRepository @Inject constructor() : WallpaperCategoryRepository {
@@ -36,8 +37,9 @@ class FakeDefaultWallpaperCategoryRepository @Inject constructor() : WallpaperCa
     override val onDeviceCategory: StateFlow<CategoryModel?>
         get() = MutableStateFlow(null)
 
-    override val isDefaultCategoriesFetched: StateFlow<Boolean>
-        get() = TODO("Not yet implemented")
+    private val _isDefaultCategoriesFetched = MutableStateFlow(false)
+    override val isDefaultCategoriesFetched: StateFlow<Boolean> =
+        _isDefaultCategoriesFetched.asStateFlow()
 
     override val thirdPartyAppCategory: StateFlow<List<CategoryModel>>
         get() =
