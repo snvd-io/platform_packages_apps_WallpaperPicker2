@@ -91,7 +91,7 @@ constructor(
                         listOf(
                             TileViewModel(
                                 defaultDrawable = null,
-                                thumbnailAsset = null,
+                                thumbnailAsset = category.collectionCategoryData?.thumbAsset,
                                 text = category.commonCategoryData.title,
                             ) {
                                 //  TODO(b/352081782): check if there is a single wallpaper

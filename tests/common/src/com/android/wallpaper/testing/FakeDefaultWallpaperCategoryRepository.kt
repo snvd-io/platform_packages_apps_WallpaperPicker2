@@ -31,16 +31,39 @@ class FakeDefaultWallpaperCategoryRepository @Inject constructor() : WallpaperCa
     override val myPhotosCategory: StateFlow<CategoryModel?> = _myPhotosCategory
 
     override val systemCategories: StateFlow<List<CategoryModel>>
-        get() = TODO("Not yet implemented")
+        get() = MutableStateFlow(emptyList())
 
     override val onDeviceCategory: StateFlow<CategoryModel?>
-        get() = TODO("Not yet implemented")
-
-    override val thirdPartyAppCategory: StateFlow<List<CategoryModel>>
-        get() = TODO("Not yet implemented")
+        get() = MutableStateFlow(null)
 
     override val isDefaultCategoriesFetched: StateFlow<Boolean>
         get() = TODO("Not yet implemented")
+
+    override val thirdPartyAppCategory: StateFlow<List<CategoryModel>>
+        get() =
+            MutableStateFlow(
+                listOf(
+                    CategoryModel(
+                        commonCategoryData = CommonCategoryData("ThirdParty-1", "on_device_id", 2),
+                        thirdPartyCategoryData = null,
+                        imageCategoryData = null,
+                        collectionCategoryData = null
+                    ),
+                    CategoryModel(
+                        commonCategoryData = CommonCategoryData("ThirdParty-2", "downloads_id", 3),
+                        thirdPartyCategoryData = null,
+                        imageCategoryData = null,
+                        collectionCategoryData = null
+                    ),
+                    CategoryModel(
+                        commonCategoryData =
+                            CommonCategoryData("ThirdParty-3", "screenshots_id", 4),
+                        thirdPartyCategoryData = null,
+                        imageCategoryData = null,
+                        collectionCategoryData = null
+                    )
+                )
+            )
 
     override suspend fun fetchMyPhotosCategory() {
         _myPhotosCategory.value =
