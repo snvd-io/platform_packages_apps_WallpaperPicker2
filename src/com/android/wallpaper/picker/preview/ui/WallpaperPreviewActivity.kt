@@ -15,6 +15,7 @@
  */
 package com.android.wallpaper.picker.preview.ui
 
+import android.app.WindowConfiguration.WINDOWING_MODE_FREEFORM
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -158,7 +159,9 @@ class WallpaperPreviewActivity :
 
     override fun onResume() {
         super.onResume()
-        if (isInMultiWindowMode) {
+        val isWindowingModeFreeform =
+            resources.configuration.windowConfiguration.windowingMode == WINDOWING_MODE_FREEFORM
+        if (isInMultiWindowMode && !isWindowingModeFreeform) {
             Toast.makeText(this, R.string.wallpaper_exit_split_screen, Toast.LENGTH_SHORT).show()
             onBackPressedDispatcher.onBackPressed()
         }
