@@ -688,7 +688,7 @@ public class IndividualPickerFragment extends AppbarFragment
             LayoutInflater layoutInflater = LayoutInflater.from(getActivity());
             View view = layoutInflater.inflate(R.layout.grid_item_image, parent, false);
 
-            return new PreviewIndividualHolder(getActivity(), mTileSizePx.y, view);
+            return new PreviewIndividualHolder(getActivity(), mTileSizePx.y, view, null);
         }
 
         private ViewHolder createMyPhotosHolder(ViewGroup parent) {
