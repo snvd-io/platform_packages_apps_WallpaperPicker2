@@ -57,7 +57,7 @@ import com.android.wallpaper.picker.AppbarFragment.AppbarFragmentHost;
 import com.android.wallpaper.picker.CategorySelectorFragment.CategorySelectorFragmentHost;
 import com.android.wallpaper.picker.MyPhotosStarter.PermissionChangedListener;
 import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel;
-import com.android.wallpaper.picker.individual.IndividualPickerFragment.IndividualPickerFragmentHost;
+import com.android.wallpaper.picker.individual.IndividualPickerFragmentHost;
 import com.android.wallpaper.util.ActivityUtils;
 import com.android.wallpaper.util.DeepLinkUtils;
 import com.android.wallpaper.util.DisplayUtils;
