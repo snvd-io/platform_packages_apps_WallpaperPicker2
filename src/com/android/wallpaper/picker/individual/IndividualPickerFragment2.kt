@@ -67,6 +67,9 @@ import com.android.wallpaper.picker.MyPhotosStarter.MyPhotosStarterProvider
 import com.android.wallpaper.picker.RotationStarter
 import com.android.wallpaper.picker.StartRotationDialogFragment
 import com.android.wallpaper.picker.StartRotationErrorDialogFragment
+import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel
+import com.android.wallpaper.picker.category.ui.viewmodel.CategoriesViewModel.CategoryType
+import com.android.wallpaper.picker.preview.ui.Hilt_WallpaperPreviewActivity.SHOULD_CATEGORY_REFRESH
 import com.android.wallpaper.util.ActivityUtils
 import com.android.wallpaper.util.LaunchUtils
 import com.android.wallpaper.util.SizeCalculator
@@ -114,6 +117,18 @@ class IndividualPickerFragment2 :
             fragment.arguments = args
             return fragment
         }
+
+        fun newInstance(
+            collectionId: String?,
+            categoryType: CategoriesViewModel.CategoryType
+        ): IndividualPickerFragment2 {
+            val args = Bundle()
+            args.putString(ARG_CATEGORY_COLLECTION_ID, collectionId)
+            args.putSerializable(SHOULD_CATEGORY_REFRESH, categoryType)
+            val fragment = IndividualPickerFragment2()
+            fragment.arguments = args
+            return fragment
+        }
     }
 
     private lateinit var imageGrid: RecyclerView
@@ -133,6 +148,8 @@ class IndividualPickerFragment2 :
     private var appliedWallpaperIds: Set<String> = setOf()
     private var mIsCreativeWallpaperEnabled = false
 
+    private var refreshCreativeCategories: CategoriesViewModel.CategoryType? = null
+
     /**
      * Staged error dialog fragments that were unable to be shown when the activity didn't allow
      * committing fragment transactions.
@@ -148,6 +165,10 @@ class IndividualPickerFragment2 :
         mIsCreativeWallpaperEnabled = injector.getFlags().isAIWallpaperEnabled(appContext)
         wallpaperManager = WallpaperManager.getInstance(appContext)
         packageStatusNotifier = injector.getPackageStatusNotifier(appContext)
+
+        refreshCreativeCategories =
+            arguments?.getSerializable(SHOULD_CATEGORY_REFRESH, CategoryType::class.java)
+                as? CategoryType
         items = ArrayList()
 
         // Clear Glide's cache if night-mode changed to ensure thumbnails are reloaded
@@ -538,7 +559,8 @@ class IndividualPickerFragment2 :
                 isFewerColumnLayout(),
                 getEdgePadding(),
                 imageGrid.paddingTop,
-                imageGrid.paddingBottom
+                imageGrid.paddingBottom,
+                refreshCreativeCategories
             )
         imageGrid.adapter = adapter
 
@@ -786,7 +808,8 @@ class IndividualPickerFragment2 :
         private val isFewerColumnLayout: Boolean,
         private val edgePadding: Int,
         private val bottomPadding: Int,
-        private val topPadding: Int
+        private val topPadding: Int,
+        private val refreshCreativeCategories: CategoryType?
     ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         companion object {
             const val ITEM_VIEW_TYPE_INDIVIDUAL_WALLPAPER = 2
@@ -854,7 +877,7 @@ class IndividualPickerFragment2 :
         private fun createIndividualHolder(parent: ViewGroup): RecyclerView.ViewHolder {
             val layoutInflater = LayoutInflater.from(activity)
             val view: View = layoutInflater.inflate(R.layout.grid_item_image, parent, false)
-            return PreviewIndividualHolder(activity, tileSizePx.y, view)
+            return PreviewIndividualHolder(activity, tileSizePx.y, view, refreshCreativeCategories)
         }
 
         private fun creativeCategoryHolder(parent: ViewGroup): RecyclerView.ViewHolder {
