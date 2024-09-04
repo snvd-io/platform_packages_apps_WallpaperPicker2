@@ -103,7 +103,7 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
         currentView =
             inflater.inflate(
                 if (BaseFlags.get().isNewPickerUi()) {
-                    if (isFoldable) R.layout.fragment_small_preview_foldable
+                    if (isFoldable) R.layout.fragment_small_preview_foldable2
                     else R.layout.fragment_small_preview_handheld2
                 } else {
                     if (isFoldable) R.layout.fragment_small_preview_foldable
@@ -209,12 +209,12 @@ class SmallPreviewFragment : Hilt_SmallPreviewFragment() {
         val currentNavDestId = checkNotNull(findNavController().currentDestination?.id)
         val tabs = view.findViewById<PreviewTabs>(preview_tabs_container)
         if (displayUtils.hasMultiInternalDisplays()) {
-            val dualPreviewView: DualPreviewViewPager =
-                view.requireViewById(R.id.dual_preview_pager)
+            val dualPreviewView: DualPreviewViewPager = view.requireViewById(R.id.pager_previews)
 
             DualPreviewSelectorBinder.bind(
                 tabs,
                 dualPreviewView,
+                motionLayout,
                 wallpaperPreviewViewModel,
                 appContext,
                 viewLifecycleOwner,
