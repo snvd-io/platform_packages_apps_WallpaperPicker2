@@ -28,6 +28,7 @@ import com.android.wallpaper.picker.category.domain.interactor.MyPhotosInteracto
 import com.android.wallpaper.picker.category.domain.interactor.ThirdPartyCategoryInteractor
 import com.android.wallpaper.picker.data.WallpaperModel
 import com.android.wallpaper.picker.data.category.CategoryModel
+import com.android.wallpaper.picker.network.domain.NetworkStatusInteractor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -37,7 +38,6 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.zip
 import kotlinx.coroutines.launch
 
 /** Top level [ViewModel] for the categories screen */
@@ -50,6 +50,7 @@ constructor(
     private val myPhotosInteractor: MyPhotosInteractor,
     private val thirdPartyCategoryInteractor: ThirdPartyCategoryInteractor,
     private val loadindStatusInteractor: CategoriesLoadingStatusInteractor,
+    private val networkStatusInteractor: NetworkStatusInteractor,
     @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
@@ -150,7 +151,9 @@ constructor(
             }
 
     private val individualSectionViewModels: Flow<List<SectionViewModel>> =
-        defaultCategorySections.zip(thirdPartyCategorySections) { list1, list2 -> list1 + list2 }
+        combine(defaultCategorySections, thirdPartyCategorySections) { list1, list2 ->
+            list1 + list2
+        }
 
     private val creativeSectionViewModel: Flow<SectionViewModel> =
         creativeCategoryInteractor.categories
@@ -217,6 +220,14 @@ constructor(
         }
 
     val isLoading: Flow<Boolean> = loadindStatusInteractor.isLoading
+
+    /** A [Flow] to indicate when the network status has been made enabled */
+    val isConnectionObtained: Flow<Boolean> = networkStatusInteractor.isConnectionObtained
+
+    /** This method updates network categories */
+    fun refreshNetworkCategories() {
+        singleCategoryInteractor.refreshNetworkCategories()
+    }
 
     /** This method updates the photos category */
     fun updateMyPhotosCategory() {
